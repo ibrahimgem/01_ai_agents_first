@@ -1,0 +1,8 @@
+README.md
+main.py
+pyproject.toml
+explore_uv.egg-info/PKG-INFO
+explore_uv.egg-info/SOURCES.txt
+explore_uv.egg-info/dependency_links.txt
+explore_uv.egg-info/requires.txt
+explore_uv.egg-info/top_level.txt
