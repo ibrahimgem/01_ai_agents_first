@@ -1,22 +1,25 @@
 from agents import (Agent, Runner, OpenAIChatCompletionsModel, RunConfig, handoff)
 from openai import AsyncOpenAI
 import rich
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
-gemini_api_key = "AIzaSyDaoGdaRTiAqvoq1TxbnZTwKCz6SlPwnYw" 
+# Load the Gemini API key from environment variables
+gemini_api_key = os.getenv("GEMINI_API_KEY")
 
-external_model = AsyncOpenAI(
+client = AsyncOpenAI(
     api_key=gemini_api_key,
     base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
     )
 
 model = OpenAIChatCompletionsModel(
     model="gemini-2.5-flash",
-    openai_client=external_model
+    openai_client=client
 )
 
 config = RunConfig(
     model=model,
-    model_provider=external_model,
     tracing_disabled=True
 )
 
