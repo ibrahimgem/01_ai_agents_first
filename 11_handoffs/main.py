@@ -1,4 +1,4 @@
-from agents import (Agent, Runner, OpenAIChatCompletionsModel, RunConfig, handoff)
+from agents import (Agent, Runner, OpenAIChatCompletionsModel, RunConfig)
 from openai import AsyncOpenAI
 import rich
 from dotenv import load_dotenv
@@ -41,7 +41,7 @@ triage_assistant = Agent(
 
 result = Runner.run_sync(
     starting_agent=triage_assistant,  
-    input="I need help with a python script.",
+    input="How can I create a new project in Next.js?",
     run_config=config
 )
 
