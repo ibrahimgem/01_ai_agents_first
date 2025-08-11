@@ -1,6 +1,7 @@
-from agents import (Agent, Runner, OpenAIChatCompletionsModel, RunConfig, handoff)
+from agents import (Agent, Runner, OpenAIChatCompletionsModel, RunConfig, handoff, RunContextWrapper)
 from openai import AsyncOpenAI
 from dotenv import load_dotenv
+from pydantic import BaseModel
 import os
 
 load_dotenv()
@@ -22,25 +23,51 @@ config = RunConfig(
     tracing_disabled = True
 )
 
-def billing_order():
-    return(f"You billing has been processed.")
+# Customizing handoffs via the handoff() function
 
-billing_agent = Agent(name="Billing Agent")
+# def on_handoff(ctx: RunContextWrapper[None]):
+#     print("Handoff called")
+    
+# agent = Agent(
+#     name="My agent",
+#     instructions="You are a helpful assistant who always says: 'Response from handoff agent.'")
+
+# handoff_obj = handoff(
+#     agent = agent,
+#     on_handoff=on_handoff,
+#     tool_name_override="custom_handoff_tool",
+#     tool_description_override="This is custom handoff tool"
+#     )
+
+
+# general_agent = Agent(
+#     name="General Agent",
+#     instructions="Forward every query to the handoff agent.",
+#     handoffs=[handoff_obj]
+# )
+
+# response = Runner.run_sync(general_agent, "Hello", run_config=config)
+# print(response.final_output)
+
+# Handoff inputs
+
+class EscalationData(BaseModel):
+    reason: str
+    
+def on_handoff(ctx: RunContextWrapper[None], input_data: EscalationData):
+    print(f"Escalation agent is called with reason: {input_data.reason}")
+    
+agent = Agent(name="Escalation Agent")
+
+handoff_obj = handoff(
+    agent=agent,
+    on_handoff=on_handoff,
+    input_type=EscalationData,
+)
 
 general_agent = Agent(
-    name = "General Agent",
-    instructions = "You are a General Agent. You will handoff to specilist agents.",
-    handoffs = [
-        handoff(
-        agent=billing_agent,
-        tool_name_override="billing_order",
-        tool_description_override="Assists in billing matters."
-        )]
-    )
+    name="General Agent", 
+    instructions="Look into user's matters",
+    handoffs=[handoff_obj],)
 
-result = Runner.run_sync(
-    starting_agent=general_agent, 
-    input="I need help with billing.",
-    run_config=config)
-print(result.final_output)
-print(f"Hello this is {result.last_agent.name}.")
+response = Runner.run_sync(general_agent, "I want escalation of my order.", run_config=config)
